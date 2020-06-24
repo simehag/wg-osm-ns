@@ -1,4 +1,4 @@
-# wg-osm-ns
+# WG-OSM-NS
 This repository contains the files associated with the network service launched in my thesis at NTNU (TTM4905).
 
 # Deployment
