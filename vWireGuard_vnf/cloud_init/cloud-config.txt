@@ -1,0 +1,26 @@
+#cloud-config
+password: osm4u
+chpasswd: { expire: False }
+ssh_pwauth: True
+apt:
+  preserve_sources_list: true
+  sources:
+    wireguard:
+      source: "ppa:wireguard/wireguard"
+package_upgrade: true
+packages:
+  - wireguard
+write_files:
+-   content: |
+        network:
+          version: 2
+          ethernets:
+            ens3:
+              dhcp4: true
+            ens4:
+              dhcp4: true
+            ens5:
+              dhcp4: true
+    owner: root:root
+    permissions: '0644'
+    path: /etc/netplan/config.yaml

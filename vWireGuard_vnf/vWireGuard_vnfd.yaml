@@ -1,0 +1,121 @@
+vnfd:vnfd-catalog:
+    vnfd:
+    -   id: vWireGuard_vnf
+        name: vWireGuard_vnf
+        short-name: vWireGuard_vnf
+        version: '1.0'
+        description: A WireGuard VNF
+        logo: osm.png
+        connection-point:
+        -   id: vnf-mgmt
+            name: vnf-mgmt
+            short-name: vnf-mgmt
+            type: VPORT
+        -   id: vnf-data
+            name: vnf-data
+            short-name: vnf-data
+            type: VPORT
+        -   id: vnf-tunnel
+            name: vnf-tunnel
+            short-name: vnf-tunnel
+            type: VPORT
+        mgmt-interface:
+            cp: vnf-mgmt
+        vdu:
+        -   id: vWireGuard_vnfd-VM
+            name: vWireGuard_vnfd-VM
+            description: vWireGuard_vnfd-VM
+            count: '1'
+            vm-flavor:
+                vcpu-count: 1
+                memory-mb: 1024
+                storage-gb: 10
+            image: 'ubuntu1804'
+            cloud-init-file: cloud-config.txt
+            interface:
+            -   name: eth0
+                type: EXTERNAL
+                virtual-interface:
+                    type: PARAVIRT
+                external-connection-point-ref: vnf-mgmt
+                mgmt-interface: true
+            -   name: eth1
+                type: EXTERNAL
+                virtual-interface:
+                    type: PARAVIRT
+                external-connection-point-ref: vnf-data
+            -   name: eth2
+                type: EXTERNAL
+                virtual-interface:
+                    type: PARAVIRT
+                external-connection-point-ref: vnf-tunnel
+            monitoring-param:
+            -   id: metric_vdu1_cpu
+                nfvi-metric: cpu_utilization
+            -   id: metric_vdu1_memory
+                nfvi-metric: average_memory_utilization
+        monitoring-param:
+        -   id: metric_vim_vnf1_cpu
+            name: metric_vim_vnf1_cpu
+            aggregation-type: AVERAGE
+            vdu-monitoring-param:
+                vdu-ref: vWireGuard_vnfd-VM
+                vdu-monitoring-param-ref: metric_vdu1_cpu
+        -   id: metric_vim_vnf1_memory
+            name: metric_vim_vnf1_memory
+            aggregation-type: AVERAGE
+            vdu-monitoring-param:
+                vdu-ref: vWireGuard_vnfd-VM
+                vdu-monitoring-param-ref: metric_vdu1_memory
+        vnf-configuration:
+            juju:
+                charm: wg_charm
+            initial-config-primitive:
+            -   seq: '1'
+                name: config
+                parameter:
+                -   name: ssh-hostname
+                    value: <rw_mgmt_ip>
+                -   name: ssh-username
+                    value: ubuntu
+                -   name: ssh-password
+                    value: osm4u
+            -   seq: '2'
+                name: touch
+                parameter:
+                -   name: filename
+                    data-type: STRING
+                    value: '/home/ubuntu/first-touch'
+            -   seq: '3'
+                name: generate-keys
+            -   seq: '4'
+                name: generate-config
+                parameter:
+                -   name: gateway-ip
+                    data-type: STRING
+                    value: <gateway_ip>
+            -   seq: '5'
+                name: wireguard-up
+            config-primitive:
+            -   name: add-peer
+                parameter:
+                -   name: peer-publickey 
+                    data-type: STRING
+                    default-value: ''
+                -   name: gateway-ip
+                    data-type: STRING
+                    default-value: '10.0.9.1'
+                -   name: subnet-behind-tunnel
+                    data-type: STRING
+                    default-value: '192.168.0.0/16'
+                -   name: public-endpoint
+                    data-type: STRING
+                    default-value: '192.168.30.1/24'
+            -   name: del-peer
+                parameter:
+                -   name: peer-publickey
+                    data-type: STRING
+                    default-value: 'null'
+                -   name: subnet-behind-tunnel
+                    data-type: STRING
+                    default-value: '192.168.0.0/16' 
